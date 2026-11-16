@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}STEP RAILWAY - ბილეთის გაუქმება{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin: 50px auto; padding: 0 20px;">
+    <div style="background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); text-align: center;">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size: 48px; color: #dc3545; margin-bottom: 15px;"></i>
+        <h2 style="color: #172b4d; margin-bottom: 15px;">ნამდვილად გსურთ ბილეთის გაუქმება?</h2>
+        <p style="color: #5e6c84; margin-bottom: 25px;">ჯავშნის კოდი: <strong>{{ booking.booking_code }}</strong></p>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <a href="{% url 'home' %}" style="background: #e9ecef; color: #495057; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: 600;">არა, დაბრუნება</a>
+                <button type="submit" style="background: #dc3545; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: 600; cursor: pointer;">დიახ, გაუქმება</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

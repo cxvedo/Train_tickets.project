@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}STEP RAILWAY - ბილეთის შემოწმება{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; margin: 40px auto; padding: 0 20px;">
+    <div class="search-card" style="margin-bottom: 30px; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.08);">
+        <h2 class="search-title" style="margin-bottom: 20px; color: #172b4d;">
+            <i class="fa-solid fa-ticket"></i> ბილეთის შემოწმება და ძებნა
+        </h2>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <div style="display: flex; gap: 15px; align-items: flex-end;">
+                <div class="input-group" style="flex: 1;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #5e6c84;">ბილეთის ნომერი (კოდი)</label>
+                    <input type="text" name="ticket_code" value="{{ request.POST.ticket_code|default:'' }}" placeholder="მაგ: BR-84920" class="form-control" required>
+                </div>
+                <button type="submit" class="btn-search" style="width: 160px; height: 46px;">
+                    <i class="fa-solid fa-magnifying-glass"></i> შემოწმება
+                </button>
+            </div>
+        </form>
+
+        {% if error_message %}
+            <div class="alert-error" style="margin-top: 20px;">
+                <i class="fa-solid fa-circle-exclamation"></i> {{ error_message }}
+            </div>
+        {% endif %}
+    </div>
+
+    {% if booking %}
+    <div class="search-card" style="background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f5f7; padding-bottom: 15px; margin-bottom: 20px;">
+            <h3 style="color: #0052cc;"><i class="fa-solid fa-train"></i> Step Railway ბილეთი</h3>
+            <span style="background: #d4edda; color: #155724; padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 13px;">აქტიურია</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; font-size: 15px;">
+            <div><strong>ბილეთის ნომერი:</strong> {{ booking.booking_code }}</div>
+            <div><strong>გაცემის თარიღი:</strong> {{ booking.created_at|date:"d-m-Y" }}</div>
+            <div><strong>გამგზავრება:</strong> {{ booking.train.departure_station }}</div>
+            <div><strong>ჩასვლა:</strong> {{ booking.train.arrival_station }}</div>
+            <div><strong>გასვლის თარიღი:</strong> {{ booking.travel_date }}</div>
+            <div><strong>ტელეფონი:</strong> {{ booking.phone }}</div>
+        </div>
+
+        <h4 style="margin-bottom: 12px; font-size: 16px; color: #172b4d;">მგზავრები:</h4>
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; margin-bottom: 25px;">
+            <thead>
+                <tr style="background: #f4f5f7; border-bottom: 2px solid #dfe1e6;">
+                    <th style="padding: 10px;">სახელი, გვარი</th>
+                    <th style="padding: 10px;">პირადი ნომერი</th>
+                    <th style="padding: 10px;">ადგილი</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in booking.passengers.all %}
+                <tr style="border-bottom: 1px solid #dfe1e6;">
+                    <td style="padding: 10px;">{{ p.first_name }} {{ p.last_name }}</td>
+                    <td style="padding: 10px;">{{ p.personal_id }}</td>
+                    <td style="padding: 10px;">ვაგონი: {{ p.wagon_number }} | ადგილი: {{ p.seat_number }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="text-align: right; display: flex; gap: 10px; justify-content: flex-end;">
+            <a href="{% url 'cancel_ticket' %}?code={{ booking.booking_code }}" style="background-color: #dc3545; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">ბილეთის გაუქმება</a>
+            <!-- გასწორდა ბმული: გადაეცემა booking.id -->
+            <a href="{% url 'ticket_detail' booking.id %}" class="btn-search" style="display: inline-block; width: auto; padding: 10px 24px; text-decoration: none;">დეტალური ნახვა</a>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div style="text-align: right; display: flex; gap: 10px; justify-content: space-between; align-items: center; margin-top: 20px;">
+        <!-- უკან დაბრუნების ღილაკი -->
+        <a href="{% url 'home' %}" style="background-color: #e9ecef; color: #495057; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-arrow-left"></i> უკან დაბრუნება
+        </a>
+    </div>
+</div>
+{% endblock %}

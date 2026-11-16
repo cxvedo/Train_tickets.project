@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}STEP RAILWAY - მატარებლების სია{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <h2 style="color: #172b4d; font-size: 24px;">
+            <i class="fa-solid fa-train-subway"></i> ნაპოვნი მატარებლები
+        </h2>
+        <a href="{% url 'home' %}" style="color: #0052cc; text-decoration: none; font-weight: 600;">
+            <i class="fa-solid fa-arrow-left"></i> ახალი ძებნა
+        </a>
+    </div>
+
+    {% if trains %}
+        <div style="display: grid; gap: 20px;">
+            {% for train in trains %}
+            <div style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #0052cc;">
+                <div>
+                    <h3 style="color: #172b4d; font-size: 18px; margin-bottom: 8px;">
+                        #{{ train.id }} — {{ train.name|default:"Express მატარებელი" }}
+                    </h3>
+                    <div style="display: flex; gap: 30px; color: #5e6c84; font-size: 14px;">
+                        <div><i class="fa-regular fa-clock"></i> გამგზავრება: <strong style="color: #172b4d;">{{ train.departure_time|time:"H:i" }}</strong> ({{ train.departure_station }})</div>
+                        <div><i class="fa-regular fa-clock"></i> ჩასვლა: <strong style="color: #172b4d;">{{ train.arrival_time|time:"H:i" }}</strong> ({{ train.arrival_station }})</div>
+                    </div>
+                </div>
+                <div>
+                   <a href="{% url 'book_ticket' %}?train_id={{ train.id }}&date={{ request.GET.date }}&passengers={{ request.GET.passengers }}" class="btn-book">
+                         დაჯავშნა
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="background: #fff; padding: 40px; text-align: center; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.06);">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; color: #ffc107; margin-bottom: 15px;"></i>
+            <h3 style="color: #172b4d; margin-bottom: 10px;">მატარებლები ვერ მოიძებნა</h3>
+            <p style="color: #5e6c84; margin-bottom: 20px;">მითითებული მიმართულებით მატარებელი არ ფიქსირდება.</p>
+            <a href="{% url 'home' %}" class="btn-search" style="display: inline-block; width: auto; padding: 10px 24px; text-decoration: none;">მთავარზე დაბრუნება</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

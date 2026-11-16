@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+
+{% block title %}STEP RAILWAY - მთავარი{% endblock %}
+
+{% block content %}
+    
+
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1>შეიძინეთ მატარებლის ბილეთები ონლაინ</h1>
+            <p>სწრაფი, კომფორტული და უსაფრთხო მგზავრობა მთელი საქართველოს მასშტაბით</p>
+        </div>
+
+        <div class="search-card-wrapper">
+        <form method="GET" action="{% url 'train_list' %}", class="d-flex flex-wrap gap-3 align-items-end">
+        <!-- საიდან -->
+        <div>
+            <label for="fromStation" class="form-label mb-1">საიდან</label>
+            <select id="fromStation" name="from" class="form-select">
+            <option value="" selected disabled>აირჩიეთ სადგური</option>
+            <option value="თბილისი">თბილისი</option>
+            <option value="ბათუმი">ბათუმი</option>
+            <option value="ქუთაისი">ქუთაისი</option>
+            <option value="ზუგდიდი">ზუგდიდი</option>
+            <option value="ფოთი">ფოთი</option>
+            <option value="ოზურგეთი">ოზურგეთი</option>
+            <option value="ბორჯომი">ბორჯომი</option>
+            <option value="გორი">გორი</option>
+            <option value="ხაშური">ხაშური</option>
+            <option value="სამტრედია">სამტრედია</option>
+            <option value="ურეკი">ურეკი</option>
+            <option value="ქობულეთი">ქობულეთი</option>
+            </select>
+        </div>
+
+        <!-- სად -->
+        <div>
+            <label for="toStation" class="form-label mb-1">სად</label>
+            <select id="toStation" name="to" class="form-select">
+            <option value="" selected disabled>აირჩიეთ სადგური</option>
+            <option value="თბილისი">თბილისი</option>
+            <option value="ბათუმი">ბათუმი</option>
+            <option value="ქუთაისი">ქუთაისი</option>
+            <option value="ზუგდიდი">ზუგდიდი</option>
+            <option value="ფოთი">ფოთი</option>
+            <option value="ოზურგეთი">ოზურგეთი</option>
+            <option value="ბორჯომი">ბორჯომი</option>
+            <option value="გორი">გორი</option>
+            <option value="ხაშური">ხაშური</option>
+            <option value="სამტრედია">სამტრედია</option>
+            <option value="ურეკი">ურეკი</option>
+            <option value="ქობულეთი">ქობულეთი</option>
+            </select>
+        </div>
+
+        <!-- თარიღი -->
+        <div>
+            <label for="travelDate" class="form-label mb-1">თარიღი</label>
+            <input type="date" id="travelDate" name="date" class="form-control">
+        </div>
+
+        <!-- მგზავრი -->
+        <div>
+            <label for="passengers" class="form-label mb-1">მგზავრი</label>
+            <input type="number" id="passengers" name="passengers" class="form-control" value="1" min="1" max="10" style="width: 90px;">
+        </div>
+
+        <!-- ძებნა -->
+        <button type="submit" class="btn btn-primary">ძებნა</button>
+        </div>
+    </section>
+
+    <section class="features-section">
+        <div class="features-container">
+            <div class="features-image">
+                <img src="https://cdn2.grmedia.com.ge/app/uploads/2025/02/%E1%83%AF%E1%83%A0%E1%83%A2-scaled.jpg" alt="Travel Illustration">
+            </div>
+            <div class="features-content">
+                <h2>რატომ უნდა აირჩიოთ Step Railway?</h2>
+                <p class="features-intro">ჩვენ გთავაზობთ საუკეთესო პირობებსა და სწრაფ მომსახურებას, რათა თქვენი მგზავრობა იყოს მაქსიმალურად კომფორტული.</p>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon"><i class="fa-solid fa-ticket"></i></div>
+                        <div class="feature-text">
+                            <h4>სწრაფი ჯავშანი</h4>
+                            <span>შეუზღუდავი შეთავაზებები</span>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"><i class="fa-solid fa-headset"></i></div>
+                        <div class="feature-text">
+                            <h4>24/7 მხარდაჭერა</h4>
+                            <span>მუდმივი დახმარება</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p>© 2026 Step Railway. ყველა უფლება დაცულია.</p>
+        </div>
+    </footer>
+{% endblock content %}

@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+
+
+{% block title %}STEP RAILWAY - ბილეთის დაჯავშნა{% endblock %}
+
+
+
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <a href="{% url 'home' %}" style="background-color: #e9ecef; color: #495057; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-arrow-left"></i> უკან დაბრუნება
+        </a>
+        <a href="{% url 'check_ticket' %}" class="btn-check-ticket">
+            <i class="fa-solid fa-ticket-simple"></i> ბილეთის შემოწმება/დაბრუნება
+        </a>
+    </div>
+
+    <div style="background: #fff; padding: 35px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.08);">
+        <h2 style="color: #172b4d; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-train"></i> STEP RAILWAY
+        </h2>
+
+        <form method="POST" id="booking-form">
+            {% csrf_token %}
+            <input type="hidden" name="travel_date" value="{{ departure_date }}">
+            <input type="hidden" name="passengers_count" value="{{ passengers_count }}">
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px;">
+                <input type="email" name="email" placeholder="name@gmail.com" class="form-control" required
+                       oninvalid="this.setCustomValidity('გთხოვთ შეიყვანოთ ელ-ფოსტა')" oninput="this.setCustomValidity('')">
+                <input type="text" name="phone" placeholder="551234567" class="form-control" required
+                       oninvalid="this.setCustomValidity('გთხოვთ შეიყვანოთ ტელეფონის ნომერი')" oninput="this.setCustomValidity('')">
+            </div>
+
+            <h3 style="font-size: 18px; margin-bottom: 20px; color: #172b4d; font-weight: 700;">მგზავრების ინფორმაცია</h3>
+
+            {% for i in passengers_range %}
+            <div style="margin-bottom: 25px;">
+                <h4 style="font-size: 15px; margin-bottom: 10px; color: #172b4d; font-weight: 600;">მგზავრი {{ i }}</h4>
+                
+                <div style="display: grid; grid-template-columns: 140px 1fr 1fr 1.3fr 160px; gap: 10px; align-items: center; background: #fff; border: 1px solid #dfe1e6; padding: 12px; border-radius: 10px;">
+                    
+                    <div style="background: #0052cc; color: white; padding: 10px; border-radius: 8px; text-align: center; font-weight: 600; font-size: 14px; line-height: 1.2;">
+                        ადგილი: <span style="font-size: 16px;" id="seat_label_{{ i }}">0</span>
+                        <small id="wagon_label_{{ i }}" style="display:block; font-weight:400; font-size:11px;"></small>
+                        <input type="hidden" name="wagon_{{ i }}" id="wagon_{{ i }}" value="">
+                        <input type="hidden" name="seat_{{ i }}" id="seat_{{ i }}" value="">
+                    </div>
+
+                    <input type="text" name="first_name_{{ i }}" placeholder="სახელი" class="form-control" style="height: 42px;" required
+                           oninvalid="this.setCustomValidity('შეავსეთ სახელი')" oninput="this.setCustomValidity('')">
+                    
+                    <input type="text" name="last_name_{{ i }}" placeholder="გვარი" class="form-control" style="height: 42px;" required
+                           oninvalid="this.setCustomValidity('შეავსეთ გვარი')" oninput="this.setCustomValidity('')">
+                    
+                    <input type="text" name="personal_id_{{ i }}" placeholder="12345678901" class="form-control" style="height: 42px;" required
+                           oninvalid="this.setCustomValidity('შეავსეთ პირადი ნომერი')" oninput="this.setCustomValidity('')">
+                    
+                    <!-- ღილაკი ხსნის ვაგონისა და ადგილის არჩევის მოდალს ამ მგზავრისთვის -->
+                    <button type="button" class="sm-open" data-passenger="{{ i }}" style="background-color: #0052cc; color: white; border: none; height: 42px; border-radius: 8px; font-weight: 600; font-size: 13px; display: flex; align-items: center; justify-content: center; cursor: pointer; width: 100%;">
+                        ადგილის არჩევა
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div id="sm-total" style="text-align: right; font-size: 18px; font-weight: 700; color: #172b4d; margin-top: 20px;">ჯამი: 0 ₾</div>
+
+            <button type="submit" class="btn-search" style="width: 100%; margin-top: 15px; height: 48px; font-size: 16px;">
+                დაჯავშნა და გადახდა
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ============ ვაგონისა და ადგილის არჩევის მოდალი (ერთი ყველა მგზავრისთვის) ============ -->
+<div class="sm-overlay" id="sm-ov" role="dialog" aria-modal="true" aria-labelledby="sm-t">
+  <div class="sm-modal">
+    <div class="sm-head"><button type="button" class="sm-x" id="sm-close" aria-label="დახურვა">&times;</button></div>
+    <div class="sm-body">
+      <div class="sm-train-wrap" id="sm-wrap">
+        <div class="sm-tip" id="sm-tip"></div>
+        <svg viewBox="0 0 540 64" id="sm-svg"></svg>
+      </div>
+      <p class="sm-title" id="sm-t">გთხოვთ აირჩიოთ ვაგონი</p>
+
+      <div id="sm-seatview" style="display:none;">
+        <p class="sm-title" id="sm-wtitle"></p>
+        <div class="sm-plan" id="sm-plan"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- მონაცემები სერვერიდან (თუ view-ში არ გადაცემთ, გამოიყენება სტანდარტული მნიშვნელობები) -->
+{{ wagons|json_script:"wagons-data" }}
+{{ taken_seats|json_script:"taken-seats" }}
+
+<style>
+.sm-overlay{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:9999}
+.sm-overlay.open{display:flex}
+.sm-modal{background:#fff;border-radius:8px;width:620px;max-width:100%;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.sm-head{display:flex;justify-content:flex-end;border-bottom:1px solid #e3e5ec;padding:6px 10px;flex:none}
+.sm-x{background:none;border:0;font-size:26px;line-height:1;color:#6b7080;padding:2px 8px;cursor:pointer}
+.sm-body{padding:24px 24px 28px;text-align:center;overflow-y:auto}
+.sm-train-wrap{position:relative;overflow-x:auto;padding-top:46px}
+#sm-svg{display:block;min-width:460px;width:100%;height:auto;background:#eceef1;border-radius:8px}
+.sm-car{cursor:pointer}
+.sm-car .shell{fill:#f6f7f9;stroke:#c3c8d1;stroke-width:1.5;transition:fill .15s,stroke .15s}
+.sm-car .win{fill:#6b7585}
+.sm-car:hover .shell,.sm-car:focus .shell{fill:#ffe9eb;stroke:#d9202e}
+.sm-car:focus{outline:none}
+.sm-car.sel .shell{stroke:#0052cc;stroke-width:3}
+.sm-tip{position:absolute;top:0;transform:translateX(-50%);background:#4a4a4a;color:#fff;padding:8px 18px;border-radius:8px;font-weight:700;font-size:15px;pointer-events:none;opacity:0;transition:opacity .12s;white-space:nowrap;z-index:2}
+.sm-tip.show{opacity:1}
+.sm-tip:after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-5px;border:5px solid transparent;border-bottom:0;border-top-color:#4a4a4a}
+.sm-title{margin:18px 0 0;font-weight:700;color:#172b4d}
+.sm-plan{width:240px;max-width:100%;margin:14px auto 0;border-left:3px solid #9a9a9a;border-right:3px solid #9a9a9a;display:grid;grid-template-columns:1fr 1fr 28px 1fr 1fr;gap:8px;padding:0 10px 10px;box-sizing:border-box}
+.sm-blk{background:#d9d9d9;color:#6b7080;font-size:12px;padding:12px 0;grid-column:span 2}
+.sm-blk.r{grid-column:4 / span 2}
+.sm-gap{grid-column:3}
+.sm-seat{border:1px solid #8aa83a;border-bottom-width:3px;background:linear-gradient(#cfe58a,#a9cd4c);color:#3b4a14;border-radius:6px;padding:5px 0;font-size:12px;font-weight:700;cursor:pointer}
+.sm-seat:hover:not(:disabled){filter:brightness(.92)}
+.sm-seat.sel{background:#0052cc;border-color:#0052cc;color:#fff}
+.sm-seat:disabled{background:#cfd2da;border-color:#cfd2da;color:#8a8f9f;cursor:not-allowed}
+</style>
+
+<script>
+(function () {
+  // ---- პარამეტრები ----
+  var ROWS = 10;
+  var DEFAULT_WAGONS = [
+    {n: 1, type: "პირველი კლასი", price: 40},
+    {n: 2, type: "ეკონომ კლასი", price: 30},
+    {n: 3, type: "ბიზნეს კლასი", price: 60}
+  ];
+  // ---------------------
+  function readJSON(id) {
+    try { return JSON.parse(document.getElementById(id).textContent); } catch (e) { return null; }
+  }
+  var wagons = readJSON('wagons-data');
+  if (!Array.isArray(wagons) || !wagons.length) wagons = DEFAULT_WAGONS;
+  var TAKEN = readJSON('taken-seats');
+  if (!TAKEN || Array.isArray(TAKEN) || typeof TAKEN !== 'object') TAKEN = {};
+
+  var NS = 'http://www.w3.org/2000/svg';
+  var ov = document.getElementById('sm-ov'),
+      svg = document.getElementById('sm-svg'),
+      tip = document.getElementById('sm-tip'),
+      wrap = document.getElementById('sm-wrap'),
+      plan = document.getElementById('sm-plan'),
+      seatView = document.getElementById('sm-seatview'),
+      title = document.getElementById('sm-t'),
+      wTitle = document.getElementById('sm-wtitle'),
+      form = document.getElementById('booking-form');
+  var cars = [], curWagon = null, curPassenger = null;
+
+  function el(t, a, p) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; }
+  function div(cls, txt) { var d = document.createElement('div'); d.className = cls; if (txt) d.textContent = txt; return d; }
+  function val(id) { var e = document.getElementById(id); return e ? e.value : ''; }
+  function passengerIds() {
+    var ids = [], inputs = form.querySelectorAll('input[id^="seat_"]');
+    for (var i = 0; i < inputs.length; i++) ids.push(inputs[i].id.replace('seat_', ''));
+    return ids;
+  }
+  function isTaken(w, label) { return (TAKEN[w] || []).indexOf(label) > -1; }
+  function takenByOthers(w, label) {
+    return passengerIds().some(function (p) {
+      return p !== String(curPassenger) && val('wagon_' + p) === String(w) && val('seat_' + p) === label;
+    });
+  }
+
+  function updateTotal() {
+    var sum = 0;
+    passengerIds().forEach(function (p) {
+      var wn = val('wagon_' + p);
+      wagons.forEach(function (w) { if (String(w.n) === wn && val('seat_' + p)) sum += Number(w.price) || 0; });
+    });
+    document.getElementById('sm-total').textContent = 'ჯამი: ' + sum + ' ₾';
+  }
+
+  // ვაგონების ხატვა
+  var G = 6, W = Math.floor((520 - (wagons.length - 1) * G) / wagons.length);
+  wagons.forEach(function (w, i) {
+    var x = 10 + i * (W + G), last = i === wagons.length - 1, rr = last ? 24 : 6, y = 8, h = 40;
+    if (i > 0) el('rect', {x: x - G - 1, y: 27, width: G + 2, height: 8, rx: 2, fill: '#8a909c'}, svg);
+    var g = el('g', {'class': 'sm-car', tabindex: 0, role: 'button', 'aria-label': 'ვაგონი ' + w.n + ' ' + w.type}, svg);
+    var d = 'M' + (x + 6) + ' ' + y + 'H' + (x + W - rr) + 'Q' + (x + W) + ' ' + y + ' ' + (x + W) + ' ' + (y + rr) +
+            'V' + (y + h - 6) + 'Q' + (x + W) + ' ' + (y + h) + ' ' + (x + W - 6) + ' ' + (y + h) +
+            'H' + (x + 6) + 'Q' + x + ' ' + (y + h) + ' ' + x + ' ' + (y + h - 6) +
+            'V' + (y + 6) + 'Q' + x + ' ' + y + ' ' + (x + 6) + ' ' + y + 'Z';
+    el('path', {'class': 'shell', d: d}, g);
+    el('rect', {x: x + 3, y: 34, width: W - 6 - (last ? 12 : 0), height: 4, fill: '#d9202e'}, g);
+    var avail = W - 20 - (last ? 14 : 0), cnt = Math.max(2, Math.floor(avail / 20)), ww = (avail - (cnt - 1) * 6) / cnt;
+    for (var j = 0; j < cnt; j++) el('rect', {'class': 'win', x: x + 10 + j * (ww + 6), y: 15, width: ww, height: 11, rx: 3}, g);
+    if (last) el('rect', {x: x + W - 20, y: 15, width: 12, height: 11, rx: 3, fill: '#d9202e'}, g);
+    el('circle', {cx: x + 22, cy: 51, r: 4, fill: '#6f7581'}, g);
+    el('circle', {cx: x + W - 22, cy: 51, r: 4, fill: '#6f7581'}, g);
+    cars.push(g);
+    var show = function () {
+      tip.textContent = w.type + ' · ' + w.price + ' ₾'; tip.classList.add('show');
+      var k = svg.getBoundingClientRect().width / 540;
+      tip.style.left = ((x + W / 2) * k + svg.getBoundingClientRect().left - wrap.getBoundingClientRect().left) + 'px';
+    };
+    g.addEventListener('mouseenter', show);
+    g.addEventListener('focus', show);
+    g.addEventListener('mouseleave', function () { tip.classList.remove('show'); });
+    g.addEventListener('blur', function () { tip.classList.remove('show'); });
+    var pick = function () { selectWagon(w, g); };
+    g.addEventListener('click', pick);
+    g.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+  });
+
+  function selectWagon(w, g) {
+    cars.forEach(function (c) { c.classList.remove('sel'); });
+    if (g) g.classList.add('sel');
+    curWagon = w;
+    tip.classList.remove('show');
+    title.style.display = 'none';
+    wTitle.textContent = 'მგზავრი ' + curPassenger + ' – ვაგონის ნომერი: ' + w.n + ' (' + w.type + ', ' + w.price + ' ₾)';
+    seatView.style.display = 'block';
+    renderSeats();
+  }
+
+  function renderSeats() {
+    plan.innerHTML = '';
+    plan.appendChild(div('sm-blk', 'Toilet')); plan.appendChild(div('sm-blk r'));
+    var ownW = val('wagon_' + curPassenger), ownS = val('seat_' + curPassenger);
+    for (var r = 1; r <= ROWS; r++) {
+      ['A', 'B', '', 'C', 'D'].forEach(function (l) {
+        if (!l) { plan.appendChild(div('sm-gap')); return; }
+        var label = r + l, b = document.createElement('button');
+        b.type = 'button'; b.className = 'sm-seat'; b.textContent = label;
+        var own = ownW === String(curWagon.n) && ownS === label;
+        if (own) b.className += ' sel';
+        if ((isTaken(curWagon.n, label) || takenByOthers(curWagon.n, label)) && !own) b.disabled = true;
+        b.onclick = function () { chooseSeat(label, own); };
+        plan.appendChild(b);
+      });
+    }
+    plan.appendChild(div('sm-blk')); plan.appendChild(div('sm-blk r', 'Toilet'));
+  }
+
+  function chooseSeat(label, wasOwn) {
+    var p = curPassenger;
+    document.getElementById('wagon_' + p).value = wasOwn ? '' : curWagon.n;
+    document.getElementById('seat_' + p).value = wasOwn ? '' : label;
+    document.getElementById('seat_label_' + p).textContent = wasOwn ? '0' : label;
+    document.getElementById('wagon_label_' + p).textContent = wasOwn ? '' : 'ვაგონი ' + curWagon.n + ' · ' + curWagon.price + ' ₾';
+    updateTotal();
+    closeModal();
+  }
+
+  function openModal(p) {
+    curPassenger = p; curWagon = null;
+    cars.forEach(function (c) { c.classList.remove('sel'); });
+    seatView.style.display = 'none';
+    title.style.display = '';
+    title.textContent = 'მგზავრი ' + p + ' – გთხოვთ აირჩიოთ ვაგონი';
+    ov.classList.add('open');
+    // თუ მგზავრს უკვე აქვს არჩეული ადგილი, პირდაპირ მისი ვაგონი გაიხსნას
+    var ownW = val('wagon_' + p);
+    if (ownW) wagons.forEach(function (w, i) { if (String(w.n) === ownW) selectWagon(w, cars[i]); });
+  }
+  function closeModal() { ov.classList.remove('open'); tip.classList.remove('show'); }
+
+  var openers = document.querySelectorAll('.sm-open');
+  for (var i = 0; i < openers.length; i++) {
+    (function (btn) { btn.addEventListener('click', function () { openModal(btn.getAttribute('data-passenger')); }); })(openers[i]);
+  }
+  document.getElementById('sm-close').onclick = closeModal;
+  ov.addEventListener('click', function (e) { if (e.target === ov) closeModal(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+  // გაგზავნამდე შევამოწმოთ, რომ ყველა მგზავრს აქვს ადგილი
+  form.addEventListener('submit', function (e) {
+    var ids = passengerIds();
+    for (var k = 0; k < ids.length; k++) {
+      if (!val('seat_' + ids[k])) {
+        e.preventDefault();
+        alert('გთხოვთ აირჩიოთ ადგილი მგზავრისთვის ' + ids[k]);
+        openModal(ids[k]);
+        return;
+      }
+    }
+  });
+})();
+</script>
+{% endblock %}
